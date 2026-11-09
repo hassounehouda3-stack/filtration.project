@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filtration Calculator</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e5f0f7, #f5f8fc);
+    margin: 0;
+    padding: 50px 20px;
+    color: #263746;
+}
+
+.container {
+    max-width: 550px;
+    margin: auto;
+    background: white;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(30, 70, 100, 0.12);
+}
+
+h1 {
+    text-align: center;
+    color: #176b87;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #718096;
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    margin-top: 9px;
+    border: 1px solid #cbd5e0;
+    border-radius: 9px;
+    font-size: 16px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #176b87;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 28px;
+    background: #176b87;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #10536b;
+}
+
+#resultats {
+    display: none;
+    margin-top: 25px;
+    padding: 20px;
+    background: #edf7fa;
+    border-radius: 12px;
+    line-height: 2;
+}
+
+#resultats h3 {
+    color: #176b87;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Filtration Calculator</h1>
+    <p class="subtitle">Calcul du bilan matière – Opération 1</p>
+
+    <label for="m0">Masse initiale (m₀)</label>
+    <input type="number" id="m0" placeholder="Exemple : 1000">
+
+    <label for="x0">Fraction soluble (x₀)</label>
+    <input type="number" id="x0" step="any" placeholder="Exemple : 0.02">
+
+    <button onclick="calculer()">Calculer</button>
+
+    <div id="resultats"></div>
+</div>
+
+<script>
+async function calculer() {
+    const m0 = parseFloat(document.getElementById("m0").value);
+    const x0 = parseFloat(document.getElementById("x0").value);
+
+    if (!Number.isFinite(m0) || !Number.isFinite(x0)) {
+        alert("Veuillez remplir les deux champs.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/calculate", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({m0, x0})
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert("Valeurs invalides. Vérifiez vos données.");
+            return;
+        }
+
+        const zone = document.getElementById("resultats");
+        zone.style.display = "block";
+
+        zone.innerHTML = `
+            <h3>Résultats du calcul</h3>
+            <p>Masse des résidus : <strong>${data.m_residus.toFixed(2)}</strong></p>
+            <p>Masse finale (m₁) : <strong>${data.m1.toFixed(2)}</strong></p>
+            <p>Fraction soluble finale (x₁) : <strong>${data.x1.toFixed(5)}</strong></p>
+        `;
+    } catch (error) {
+        alert("Impossible de contacter le serveur.");
+    }
+}
+</script>
+
+</body>
+</html>
